@@ -1,4 +1,4 @@
-# DoodlePitch
+<img width="1680" height="1050" alt="Screenshot 2026-07-07 at 15 58 17" src="https://github.com/user-attachments/assets/80b9ca19-808a-4379-a974-ae20041f2a2d" /># DoodlePitch
 A delightfully messy, sketch-style fantasy football companion that hides a monster optimization engine. Built in Python with a hand-drawn comic aesthetic, it uses integer linear programming algorithms to solve the mathematical Knapsack Problem, generating optimal player transfers, captain choices, and squad arrangements under budget constraints.
 
 <img width="1043" height="267" alt="background-removed (5)" src="https://github.com/user-attachments/assets/57a4ea4b-76b8-4c7e-9188-782e99d41559" />
@@ -29,15 +29,21 @@ A budget, a player pool, and a squad shape go in. An optimal XI comes out — so
   lock / ban       subject to constraints
 ```
 
+```
+<img width="1680" height="1050" alt="image" src="https://github.com/user-attachments/assets/b7eda21b-c27a-4377-89c4-8274c1cb0654" />
+
+```
+
+
+
 ### the maths, briefly
 
 ```
-score_i  = α · points_i + (1 - α) · (form_i × 10)
-maximize Σ x_i · score_i
-subject to:  Σ x_i · cost_i ≤ budget
-             locked players → x = 1
-             banned players → x = 0
-             squad shape constraints (GK / DEF / MID / FWD)
+Every player gets a score, blending season points with current form based on how much you trust the recent run of games. The solver then picks the combination of players that adds up to the highest total score, without ever going over budget.
+
+Locked players are forced into the squad. Banned players are forced out. And whichever squad mode you pick — Knapsack, FPL, or 5-a-side — adds its own shape rules on top (how many defenders, midfielders, forwards, and exactly one keeper).
+
+It's the knapsack problem, wearing a Liverpool shirt.
 ```
 
 ### squad modes
@@ -51,14 +57,15 @@ subject to:  Σ x_i · cost_i ≤ budget
 ### stack
 
 **Backend** — Python · Pandas · PuLP · CBC solver
+
 **Frontend** — vanilla JS · SVG · localStorage
+
 **Design** — sketchy notebook UI, felt-tip borders, chalkboard pitch
 
 ### run it
 
 ```bash
 python server.py
-# open localhost:8000
 ```
 
 ---
