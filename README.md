@@ -38,9 +38,11 @@ A budget, a player pool, and a squad shape go in. An optimal XI comes out — so
 ### the maths, briefly
 
 ```
-Every player gets a score, blending season points with current form based on how much you trust the recent run of games. The solver then picks the combination of players that adds up to the highest total score, without ever going over budget.
+Every player gets a score, blending season points with current form based on how much you trust the recent run of games.
+The solver then picks the combination of players that adds up to the highest total score, without ever going over budget.
 
-Locked players are forced into the squad. Banned players are forced out. And whichever squad mode you pick — Knapsack, FPL, or 5-a-side — adds its own shape rules on top (how many defenders, midfielders, forwards, and exactly one keeper).
+Locked players are forced into the squad. Banned players are forced out. And whichever squad mode you pick — Knapsack,
+FPL, or 5-a-side — adds its own shape rules on top (how many defenders, midfielders, forwards, and exactly one keeper).
 
 It's the knapsack problem, wearing a Liverpool shirt.
 ```
