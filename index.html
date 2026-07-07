@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚽ DoodlePitch: The Hand-Drawn Fantasy Football Solver</title>
+    <meta name="description" content="An unconventional fantasy football solver that uses Mixed-Integer Linear Programming to optimize your team, wrapped in a playful, hand-drawn sketchbook interface.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Patrick+Hand&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sketch-paper">
+        <header class="doodle-header">
+            <div class="header-inner">
+                <div class="title-container">
+                    <h1 class="doodle-title">⚽ DOODLEPITCH</h1>
+                    <span class="doodle-badge">THE HAND-DRAWN FANTASY FOOTBALL SOLVER</span>
+                </div>
+                <p class="doodle-subtitle">
+                    A Mixed-Integer Linear Programming (MILP) constraint solver disguised as raw, messy notebook scribbles.
+                </p>
+            </div>
+            <svg class="header-divider" viewBox="0 0 1000 20" preserveAspectRatio="none">
+                <path d="M0,10 Q150,5 300,12 T600,8 T900,13 L1000,10" fill="none" stroke="#1E1E1E" stroke-width="3" />
+                <path d="M5,13 Q160,8 310,15 T610,11 T910,16 L995,12" fill="none" stroke="#FF79B4" stroke-width="1.5" opacity="0.7" />
+            </svg>
+        </header>
+        <main class="workspace-grid">
+            <section class="playbook-panel sketch-card">
+                <div class="card-header">
+                    <h2 class="section-title">📝 The Active Player Pool</h2>
+                    <p class="section-desc">Manage the "Famous 22" or draft custom players. Lock core selections or strike out exclusions.</p>
+                </div>
+                <div class="filters-row">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Search player or team..." class="sketch-input">
+                    </div>
+                    <div class="position-tabs">
+                        <button class="tab-btn active" data-pos="ALL">All</button>
+                        <button class="tab-btn" data-pos="GK">GK</button>
+                        <button class="tab-btn" data-pos="DEF">DEF</button>
+                        <button class="tab-btn" data-pos="MID">MID</button>
+                        <button class="tab-btn" data-pos="FWD">FWD</button>
+                    </div>
+                </div>
+                <div class="table-container sketch-border">
+                    <table class="roster-table" id="roster-table">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Team</th>
+                                <th>Pos</th>
+                                <th>Cost</th>
+                                <th>Pts</th>
+                                <th>Form</th>
+                                <th style="text-align: center;">Controls</th>
+                            </tr>
+                        </thead>
+                        <tbody id="player-rows">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="add-player-box sketch-card highlight-yellow">
+                    <div class="accordion-toggle" id="toggle-add-player">
+                        <h3>✏️ Sketch a New Player into Pool</h3>
+                        <span class="chevron-icon">▼</span>
+                    </div>
+                    <form id="add-player-form" class="accordion-content hidden">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="new-name">Name</label>
+                                <input type="text" id="new-name" required placeholder="e.g. Bukayo Saka" class="sketch-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-team">Team</label>
+                                <input type="text" id="new-team" required placeholder="e.g. Arsenal" class="sketch-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-pos">Position</label>
+                                <select id="new-pos" class="sketch-select">
+                                    <option value="GK">Goalkeeper (GK)</option>
+                                    <option value="DEF">Defender (DEF)</option>
+                                    <option value="MID">Midfielder (MID)</option>
+                                    <option value="FWD">Forward (FWD)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-cost">Cost (£m)</label>
+                                <input type="number" id="new-cost" required step="0.1" min="3.0" max="20.0" value="6.0" class="sketch-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-points">Season Points</label>
+                                <input type="number" id="new-points" required min="0" max="400" value="100" class="sketch-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-form">Current Form</label>
+                                <input type="number" id="new-form" required step="0.1" min="0.0" max="15.0" value="5.0" class="sketch-input">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-sketch btn-submit-player">Draft Player onto Page ✍️</button>
+                    </form>
+                </div>
+                <div class="scouting-card highlight-blue hidden" id="scouting-report-card">
+                    <h3>🕵️ Player Scouting Report</h3>
+                    <div class="scouting-metrics">
+                        <div class="scouting-item">
+                            <span class="scouting-label">Player Name</span>
+                            <span class="scouting-value" id="scout-name">-</span>
+                        </div>
+                        <div class="scouting-item">
+                            <span class="scouting-label">Availability Status</span>
+                            <span id="scout-status">-</span>
+                        </div>
+                        <div class="scouting-item">
+                            <span class="scouting-label">Attacking Returns</span>
+                            <span class="scouting-value" id="scout-attack">-</span>
+                        </div>
+                        <div class="scouting-item">
+                            <span class="scouting-label">Clean Sheets</span>
+                            <span class="scouting-value" id="scout-def">-</span>
+                        </div>
+                        <div class="scouting-item">
+                            <span class="scouting-label">FPL Ownership</span>
+                            <span class="scouting-value" id="scout-ownership">-</span>
+                        </div>
+                        <div class="scouting-item">
+                            <span class="scouting-label">Points per £m Value</span>
+                            <span class="scouting-value" id="scout-value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="solver-panel">
+                <div class="controls-card sketch-card">
+                    <h2 class="section-title">⚙️ Optimization Controls</h2>
+                    <div class="control-widgets">
+                        <div class="widget-group">
+                            <div class="widget-header">
+                                <label for="budget-range">Financial Budget Limit: </label>
+                                <span class="widget-value highlight-pink" id="budget-val">£83.0m</span>
+                            </div>
+                            <div class="slider-container">
+                                <input type="range" id="budget-range" min="50.0" max="150.0" step="0.5" value="83.0" class="sketch-slider">
+                                <div class="slider-labels">
+                                    <span>£50m</span>
+                                    <span>£100m</span>
+                                    <span>£150m</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="widget-group">
+                            <div class="widget-header">
+                                <label for="weight-range">Prioritization Metric:</label>
+                                <span class="widget-value highlight-blue" id="weight-val">50% Points / 50% Form</span>
+                            </div>
+                            <div class="slider-container">
+                                <input type="range" id="weight-range" min="0" max="100" step="5" value="50" class="sketch-slider">
+                                <div class="slider-labels">
+                                    <span>⚡ Max Form (100%)</span>
+                                    <span>Balanced</span>
+                                    <span>🏆 Total Pts (100%)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="widget-group">
+                            <label class="widget-label">Constraint Layout & Squad Size:</label>
+                            <div class="formation-options">
+                                <label class="radio-card">
+                                    <input type="radio" name="formation" value="knapsack" checked>
+                                    <div class="radio-content sketch-border">
+                                        <h4>🎒 Knapsack Solved</h4>
+                                        <p>Flexible selection under budget (max 11 players).</p>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="formation" value="squad_11">
+                                    <div class="radio-content sketch-border">
+                                        <h4>🏆 FPL Squad (11)</h4>
+                                        <p>Strict FPL: 1 GK, 3-5 DEF, 3-5 MID, 1-3 FWD.</p>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="formation" value="squad_5">
+                                    <div class="radio-content sketch-border">
+                                        <h4>🖐️ Five-A-Side</h4>
+                                        <p>5 players: 1 GK, 1 DEF, 1 MID, 1 FWD, 1 flex.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-sketch btn-solve highlight-green" id="btn-solve">
+                        <span>📐 Run MILP Optimization</span>
+                    </button>
+                </div>
+                <div class="pitch-container sketch-card">
+                    <div class="pitch-header">
+                        <h2 class="pitch-title">📋 Whiteboard Tactical Lineup</h2>
+                        <div class="pitch-actions">
+                            <button id="btn-clear-locks" class="btn-small-sketch">Reset Locks</button>
+                            <button id="btn-reset-pool" class="btn-small-sketch">Default 22</button>
+                        </div>
+                    </div>
+                    <div class="football-pitch" id="pitch-board">
+                        <div class="pitch-grid-texture"></div>
+                        <svg class="pitch-markings" viewBox="0 0 400 500" preserveAspectRatio="none">
+                            <rect x="15" y="15" width="370" height="470" fill="none" stroke="white" stroke-width="2.5" stroke-dasharray="2 3 5 2" opacity="0.8" />
+                            <line x1="15" y1="250" x2="385" y2="250" stroke="white" stroke-width="2" stroke-dasharray="4 4" opacity="0.8" />
+                            <circle cx="200" cy="250" r="50" fill="none" stroke="white" stroke-width="2" stroke-dasharray="3 3" opacity="0.8" />
+                            <circle cx="200" cy="250" r="3" fill="white" />
+                            <rect x="80" y="15" width="240" height="90" fill="none" stroke="white" stroke-width="2" stroke-dasharray="5 4" opacity="0.8" />
+                            <rect x="140" y="15" width="120" height="30" fill="none" stroke="white" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.8" />
+                            <circle cx="200" cy="75" r="2" fill="white" />
+                            <path d="M150,105 A60,60 0 0,0 250,105" fill="none" stroke="white" stroke-width="1.8" stroke-dasharray="4 3" opacity="0.8" />
+                            <rect x="80" y="395" width="240" height="90" fill="none" stroke="white" stroke-width="2" stroke-dasharray="5 4" opacity="0.8" />
+                            <rect x="140" y="455" width="120" height="30" fill="none" stroke="white" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.8" />
+                            <circle cx="200" cy="425" r="2" fill="white" />
+                            <path d="M150,395 A60,60 0 0,1 250,395" fill="none" stroke="white" stroke-width="1.8" stroke-dasharray="4 3" opacity="0.8" />
+                        </svg>
+                        <div class="pitch-row row-fwd" id="pitch-fwd" data-label="FORWARDS"></div>
+                        <div class="pitch-row row-mid" id="pitch-mid" data-label="MIDFIELDERS"></div>
+                        <div class="pitch-row row-def" id="pitch-def" data-label="DEFENDERS"></div>
+                        <div class="pitch-row row-gk" id="pitch-gk" data-label="GOALKEEPER"></div>
+                        <div class="loading-overlay hidden" id="solver-loading">
+                            <div class="doodle-loader">
+                                <div class="pencil-icon">✏️</div>
+                                <p class="loading-text">MILP math solver calculating coordinates...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="squad-summary-postit" id="squad-summary">
+                        <div class="pin">📌</div>
+                        <h3 class="postit-title">Draft Summary</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <span class="metric-label">Selected Count:</span>
+                                <span class="metric-val" id="sum-count">0 / 11</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Budget Used:</span>
+                                <span class="metric-val" id="sum-cost">£0.0m</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Predicted Pts:</span>
+                                <span class="metric-val" id="sum-points">0 pts</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Average Form:</span>
+                                <span class="metric-val" id="sum-form">0.0</span>
+                            </div>
+                        </div>
+                        <div id="solver-feedback-box" class="solver-message">
+                            Select controls and click "Run MILP Optimization" to draw squad.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <footer class="doodle-footer">
+            <svg class="footer-divider" viewBox="0 0 1000 20" preserveAspectRatio="none">
+                <path d="M0,10 Q200,15 400,8 T800,12 T1000,10" fill="none" stroke="#1E1E1E" stroke-width="2.5" />
+            </svg>
+            <div class="footer-content">
+                <p>Designed with felt tip ink, notebook paper, and branch-and-bound linear solvers.</p>
+                <p class="copyright">DOODLEPITCH &copy; 2026. All Scribbles Reserved.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
